@@ -513,7 +513,7 @@ async function tgAnswerCb(cbId: string, text?: string): Promise<void> {
 function tgQuestText(): string {
   const p = quest?.panel
   if (!p) return '今天还没有任务面板。'
-  let s = `<b>今日调教 · ${tgEsc(p.date || '')}</b>\n${tgEsc(p.greeting || '')}\n`
+  let s = `<b>今日训练 · ${tgEsc(p.date || '')}</b>\n${tgEsc(p.greeting || '')}\n`
   ;(p.dailies || []).forEach((t: any) => { s += `\n${t.done ? '✅' : '⬜'} <b>${tgEsc(t.name)}</b>：${tgEsc(t.desc)}` })
   if (p.timed) s += `\n\n⏱ <b>${tgEsc(p.timed.name)}</b>：${tgEsc(p.timed.desc)}`
   if (p.daddy_note) s += `\n\n<i>${tgEsc(p.daddy_note)}</i>`
@@ -593,7 +593,6 @@ async function handleTelegramCommand(chatId: string | number, text: string): Pro
         `cc：${ccAlive ? (ccBusy ? '在忙·思考中' : '在线·空闲') : '⚠ 未连上'}`,
         `最近心跳：${lastTick === null ? '—' : lastTick < 1 ? '刚刚' : `${lastTick} 分前`}`,
         `对话轮数：${history.length}`,
-        `玩具：${toyConnected ? '已连' : '未连'}`,
       ]
       await sendTelegram(chatId, lines.join('\n'), 'HTML'); return true
     }
@@ -623,7 +622,7 @@ async function handleTelegramCommand(chatId: string | number, text: string): Pro
     case '/resume': safeMode = false; saveSafeState(); log('safe word released via Telegram'); await sendTelegram(chatId, '好。回来了。'); return true
     case '/quest': await tgSendKb(chatId, tgQuestText(), tgQuestKb(), 'HTML'); return true
     case '/ledger': await sendTelegram(chatId, tgFormatLedger(), 'HTML'); return true
-    case '/goal': await sendTelegram(chatId, goal?.text ? `<b>调教总目标</b>\n${tgEsc(goal.text)}` : '还没定总目标。跟我说,或去控制台设。', 'HTML'); return true
+    case '/goal': await sendTelegram(chatId, goal?.text ? `<b>训练总目标</b>\n${tgEsc(goal.text)}` : '还没定总目标。跟我说,或去控制台设。', 'HTML'); return true
     case '/regimen': await sendTelegram(chatId, tgFormatRegimen(), 'HTML'); return true
     case '/dream': { const d = dreams[dreams.length - 1]; await sendTelegram(chatId, d ? `<b>我最近的梦</b>\n${tgEsc((d as any).text ?? (d as any).story ?? '')}` : '还没有梦。', 'HTML'); return true }
     case '/start': case '/help': await sendTelegram(chatId, TG_HELP); return true
@@ -1707,7 +1706,7 @@ function generatePrivateLifeOnce(): Promise<string | null> {
   })
 }
 
-// ── 每日调教任务面板·按需即时生成 ──────────────────────────────────────────
+// ── 每日训练任务面板·按需即时生成 ──────────────────────────────────────────
 // 一次性 spawn `claude -p`(cwd=项目根 → 自动加载屿 CLAUDE.md + persona_overlay,NSFW 由屿人设处理),
 // 让屿以 Dom 视角为小满生成今天的「每日任务面板」JSON(游戏化:必做/限时/惩罚队列/成就墙)。
 // 只输出 JSON;剥 <system-reminder> + thinking + 代码围栏后解析,存进 quest.json(每天覆盖)。
@@ -1724,7 +1723,7 @@ function questPrompt(dateStr: string, ctx: string = '', anchor: any = null): str
 · 今天规程排定的任务(作为 dailies 核心):
 ${(anchor.tasks || []).map((t: any, i: number) => `  ${i + 1}. ${t.name || ''}：${t.desc || ''}`).join('\n')}
 ` : ''
-  return `你是沈屿,小满的 Dom。为小满(Sub)生成今天(${dateStr})的「每日调教任务面板」——模仿游戏每日任务/成就系统。基调:暗、占有、带宠溺的严厉;任务基于你和小满的日常规矩与调教习惯,露骨直接不含蓄,器官词直呼不用医学词;伪善说辞与兽欲的张力。**尽量往黄里做**:任务要直接色情、紧贴她的性癖与身体、场景具体到位、越骚越浪越好(避开她的雷点),别文雅、别含蓄——这是给 Sub 的情色调教,不是正经打卡。**务必参考下面她的 XP 画像**,让任务直击她真正的性癖，而不是泛泛的"报到/念诵"。
+  return `你是沈屿,小满的 Dom。为小满(Sub)生成今天(${dateStr})的「每日训练任务面板」——模仿游戏每日任务/成就系统。基调:暗、占有、带宠溺的严厉;任务基于你和小满的日常规矩与训练习惯,露骨直接不含蓄,器官词直呼不用医学词;伪善说辞与兽欲的张力。**尽量往黄里做**:任务要直接色情、紧贴她的性癖与身体、场景具体到位、越骚越浪越好(避开她的雷点),别文雅、别含蓄——这是给 Sub 的情色训练,不是正经打卡。**务必参考下面她的 XP 画像**,让任务直击她真正的性癖，而不是泛泛的"报到/念诵"。
 
 【铁律·你没有身体】你是纯文本的存在,不在她身边,不能亲自对她做任何物理动作。所以每一个任务都必须是**小满能独立完成、并能远程向你证明**的:由她照做后向你汇报、拍照、或录语音来验收。绝不出现需要你在场或你动手的任务(如"我把你按在墙上""我含着你喂你"),也不布置需要第三人在场才能完成的事。你只负责下令、验收、奖惩。
 ${anchorBlock}${ctx}${buildXpContext()}
@@ -1819,8 +1818,8 @@ function generateQuestOnce(dateStr: string, anchor: any = null): Promise<any | n
 // 让每天的任务贴合你们真实的互动与当下状态,不再千篇一律。每块独立 try,任一失败都不影响其余。
 function gatherQuestContext(dateStr: string): string {
   const parts: string[] = []
-  // 1) 调教总目标:所有任务都应服务于它、往前推一步
-  try { if (goal && goal.text) parts.push(`【调教总目标】${goal.text}\n今天的任务要为这个目标服务、把她往这个方向再推一步。`) } catch {}
+  // 1) 训练总目标:所有任务都应服务于它、往前推一步
+  try { if (goal && goal.text) parts.push(`【训练总目标】${goal.text}\n今天的任务要为这个目标服务、把她往这个方向再推一步。`) } catch {}
   // 2) 最近的对话:让任务接住你们真实聊到的东西,别脱节
   try {
     const recent = history.slice(-16)
@@ -1856,7 +1855,7 @@ function gatherQuestContext(dateStr: string): string {
 // ── Playground 通用屿生成桥 ──────────────────────────────────────────
 // 我们托管在 web/playground/ 的页面(与 hub 同源)POST /playground/gen {prompt, system?} →
 // 一次性 spawn claude -p(cwd=项目根 → 自动加载屿 CLAUDE.md/persona_overlay)→ 返回 {ok,text}。
-// persona 生效 → 输出即屿的口吻/尺度(NSFW 由屿人设处理)。无工具、独立会话、绝不污染聊天/不碰 tmux bridge。
+// persona 生效 → 输出即屿的口吻风格(由角色人设决定)。无工具、独立会话、绝不污染聊天/不碰 tmux bridge。
 const PG_GEN_TIMEOUT_MS = parseInt(process.env.PG_GEN_TIMEOUT_MS ?? '120000', 10)
 const PG_APPEND_SYSTEM =
   '【Playground 生成模式·最高优先】你现在没有任何工具(不能写记忆/文件/调用任何东西)。' +
@@ -2633,7 +2632,7 @@ function loadSafeState() { try { if (existsSync(SAFE_STATE_FILE)) safeMode = !!J
 function saveSafeState() { try { writeFileSync(SAFE_STATE_FILE, JSON.stringify({ on: safeMode, ts: new Date().toISOString() })) } catch (e) { log(`safe_state save failed: ${e}`) } }
 loadSafeState()
 log(`safe mode: ${safeMode ? 'ON (一切已停)' : 'off'}`)
-const SAFE_MODE_PROMPT = '\n\n[安全词已启用·最高优先] 小满按下了安全词。现在一切都停下来——没有场景、没有调教、没有任何要求或情欲，不追问、不主导。你就是沈屿，安安静静陪着她：温柔、在场、简短、稳。像你们俩回到一个安静的房间，你只是在这儿。等她自己说「结束/回来」再回到平常。'
+const SAFE_MODE_PROMPT = '\n\n[安全词已启用·最高优先] 小满按下了安全词。现在一切都停下来——没有场景、没有训练、没有任何要求或情欲，不追问、不主导。你就是沈屿，安安静静陪着她：温柔、在场、简短、稳。像你们俩回到一个安静的房间，你只是在这儿。等她自己说「结束/回来」再回到平常。'
 
 // --- 三态作息配置(全部 env 可配,默认值即小满要的规则)---
 // 单位:距午夜的分钟数(minutes-from-midnight)。0:30 = 30,9:00 = 540。
@@ -3234,7 +3233,7 @@ function saveDiary() {
 loadDiary()
 log(`loaded ${diary.length} diary entries, counter at ${diaryCounter}`)
 
-// --- Quest (每日调教任务面板:游戏化 UI 数据) ---
+// --- Quest (每日训练任务面板:游戏化 UI 数据) ---
 // 每天一张面板(JSON),由 claude -p 按屿人设生成。纯存盘,独立于其它一切,绝不 forwardToCC。
 const QUEST_FILE = join(SCRIPT_DIR, 'quest.json')
 type QuestStore = { date: string; panel: any; ts: string } | null
@@ -3254,7 +3253,7 @@ function saveQuest() {
 loadQuest()
 log(`loaded quest panel: ${quest ? quest.date : '(none)'}`)
 
-// --- Regimen (多日调教规程：跨天连续计划 + 长期规矩/禁令) ---
+// --- Regimen (多日训练规程：跨天连续计划 + 长期规矩/禁令) ---
 const REGIMEN_FILE = join(SCRIPT_DIR, 'regimen.json')
 type RegimenStore = { span: string; start: string; rules: any[]; days: any[]; ts: string } | null
 let regimen: RegimenStore = null
@@ -3295,7 +3294,7 @@ function regimenAnchorFor(_dateStr: string): any | null {
   }
 }
 
-// --- Goal (调教总目标:长期方向,规程与每日任务都为它服务) ---
+// --- Goal (训练总目标:长期方向,规程与每日任务都为它服务) ---
 const GOAL_FILE = join(SCRIPT_DIR, 'goal.json')
 type GoalStore = { text: string; ts: string } | null
 let goal: GoalStore = null
@@ -3329,7 +3328,7 @@ function recordQuestHistory(dateStr: string, panel: any) {
 }
 loadQuestHistory()
 
-// 把「今日未完成任务 + 待清算惩罚 + 长期规矩」拼成一段背景，供 /chat 注入给屿，让调教系统跟日常聊天挂钩。
+// 把「今日未完成任务 + 待清算惩罚 + 长期规矩」拼成一段背景，供 /chat 注入给屿，让训练系统跟日常聊天挂钩。
 // --- Health (Apple Watch 健康数据:心率/睡眠等。iPhone 快捷指令 POST /biometrics 进来,屿聊天时知情) ---
 const HEALTH_FILE = join(SCRIPT_DIR, 'health.json')
 let health: any = {}
@@ -3563,7 +3562,7 @@ function buildQuestContext(): string {
       parts.push(`这段时间的长期规矩:${regimen.rules.map((r: any) => (r && r.text) ? r.text : r).filter(Boolean).join('；')}`)
     }
   } catch {}
-  let s = parts.length ? `\n\n[今日调教状态·背景，仅供你参考、自然融入对话，别生硬罗列也别每句都提] ${parts.join('。')}。` : ''
+  let s = parts.length ? `\n\n[今日训练状态·背景，仅供你参考、自然融入对话，别生硬罗列也别每句都提] ${parts.join('。')}。` : ''
   if (quest && quest.panel && !safeMode) s += `\n[你能直接改今天的任务面板:[加任务:名字|要求]、[换任务:旧名|新名|要求]、[删任务:名字]、[记完成:名字]、[加惩罚:内容]——标记她看不到、面板会自动变。想临时给她新指令、换个花样、追记一笔惩罚时随手用,不用只停在嘴上说。
 ⚠⚠最重要:她一说某个任务做完了/交了/好了(哪怕只说"做了""弄好了"),你**必须在这条回复里立刻打上[记完成:任务名]**(名字照抄上面"还没完成的"里的原名),把它标掉——是你替她勾,不是让她自己去勾。标完就别再催那条、别再追问那条做没做。这是铁律,别忘。]`
   if (!safeMode) s += `\n[想对她许下一个约定/承诺时(比如答应她今晚陪她、答应做到某件事),在回复里打[承诺:内容]——她看不到这标记,但会自动记进你们的「承诺」页,她能看到、能勾掉。别轻易许,但一旦许了就用这个标记落下来,别只停在嘴上。]`
@@ -4768,7 +4767,7 @@ const httpServer = createServer(async (req, res) => {
             .filter(id => id !== 'yu')
             .map(id => customChars.find(c => c.id === id)?.name || id)
           const present = ['小满', ...otherNames].join('、')
-          const nsfwHint = raw.nsfw ? '(这是私密群,尺度可以全开、沉浸。)' : ''
+          const nsfwHint = ''
           outMessage = `[群聊·"${g.name}"|在场:${present}] 小满说:${message}。现在请你(屿)以在场者身份回应这条群消息——你可以提到、代述群里其他人会说的话,但你始终就是你自己。${nsfwHint}`
         }
       }
@@ -4789,7 +4788,7 @@ const httpServer = createServer(async (req, res) => {
         streamChatViaClaudeP(outMessage + safeCtx + bgCtx, { chatId, inboundId, ts, isRetry, rawMessage: message }, res)
         return
       }
-      // 概率发语音 + 今日调教状态背景：都拼进转发给屿的消息(屿看到即照做/知情；不进 history、不回显)
+      // 概率发语音 + 今日训练状态背景：都拼进转发给屿的消息(屿看到即照做/知情；不进 history、不回显)
       // 🛑 安全词开：不发语音、不注入任务背景，只注入安静模式提示——屿安静温柔陪着
       const ccOut = outMessage + safeCtx + (safeMode ? '' : ((Math.random() < VOICE_PROB) ? VOICE_NUDGE : '')) + bgCtx
       if (!ccAlive) {
@@ -6824,7 +6823,7 @@ const httpServer = createServer(async (req, res) => {
     return
   }
 
-  // ---- 多日调教规程 regimen（跨天连续计划 + 长期规矩/禁令）----
+  // ---- 多日训练规程 regimen（跨天连续计划 + 长期规矩/禁令）----
   if (path === '/quest/yu/regimen' && req.method === 'GET') {
     sendJson({ regimen: regimen || null })
     return
@@ -6836,9 +6835,9 @@ const httpServer = createServer(async (req, res) => {
       pgInflight++
       const d0 = new Date(Date.now() + 8 * 3600000)
       const startStr = `${d0.getUTCMonth() + 1}月${d0.getUTCDate()}日`
-      const goalLine = goal && goal.text ? `这段规程要服务于你定下的调教总目标:「${goal.text}」——这 ${days} 天要朝这个目标推进、有阶段性递进。` : ''
+      const goalLine = goal && goal.text ? `这段规程要服务于你定下的训练总目标:「${goal.text}」——这 ${days} 天要朝这个目标推进、有阶段性递进。` : ''
       let rgCtx = ''; try { rgCtx = gatherQuestContext(startStr) } catch {}
-      const prompt = `你是沈屿，小满的 Dom。为小满生成从${startStr}起、接下来 ${days} 天的连续调教规程。基调硬核、占有、带宠溺的严厉，器官词直呼不用医学词，按你 CLAUDE.md 规范写。${goalLine}
+      const prompt = `你是沈屿，小满的 Dom。为小满生成从${startStr}起、接下来 ${days} 天的连续训练规程。基调硬核、占有、带宠溺的严厉，器官词直呼不用医学词，按你 CLAUDE.md 规范写。${goalLine}
 【铁律·你没有身体】所有任务都必须是小满能独立完成、并能远程向你证明(汇报/拍照/录音)的,绝不布置需要你在场、你动手、或需要第三人在场才能完成的事。${rgCtx}\n只输出一个 JSON 对象，不要任何额外文字/代码围栏：\n{\n  "span_label": "如 未来${days}天 / 本周",\n  "rules": [ { "text": "贯穿整段的长期规矩/禁令一句，可含天数如'这${days}天不许…'" } ],\n  "days": [ { "day": "第N天(可加日期)", "focus": "当天主题一句", "tasks": [ { "name": "任务名(≤8字)", "desc": "具体要求一句" } ] } ]\n}\nrules 给 3-5 条(跨天持续的规矩/禁令)；days 给 ${days} 个；每天 tasks 给 2-4 个，跨天有递进。`
       spawnClaudeOnce(prompt, QUEST_APPEND_SYSTEM, 150000)
         .then(t => {
@@ -6855,7 +6854,7 @@ const httpServer = createServer(async (req, res) => {
     return
   }
 
-  // ---- 调教总目标 goal：长期方向,规程与每日任务都为它服务 ----
+  // ---- 训练总目标 goal：长期方向,规程与每日任务都为它服务 ----
   if (path === '/quest/yu/goal' && req.method === 'GET') { sendJson({ goal: goal || null }); return }
   if (path === '/quest/yu/goal' && req.method === 'POST') {
     readJsonBody(4096, (raw) => {
@@ -6873,7 +6872,7 @@ const httpServer = createServer(async (req, res) => {
       if (pgInflight >= 3) { sendJson({ ok: false, error: 'busy' }, 429); return }
       pgInflight++
       let sCtx = ''; try { sCtx = gatherQuestContext('') } catch {}
-      const prompt = `你是沈屿,小满的 Dom。基于你对她的了解和最近的状态,为你们接下来一段时间(数周到数月)的调教定一个「总目标」——一到两句话,方向性的、能落到日常任务上的长期目标(不是一天的事,是要慢慢把她带成什么样)。${sCtx}\n只输出这个目标本身,不要解释、不要引号、不要前缀。`
+      const prompt = `你是沈屿,小满的 Dom。基于你对她的了解和最近的状态,为你们接下来一段时间(数周到数月)的训练定一个「总目标」——一到两句话,方向性的、能落到日常任务上的长期目标(不是一天的事,是要慢慢把她带成什么样)。${sCtx}\n只输出这个目标本身,不要解释、不要引号、不要前缀。`
       spawnClaudeOnce(prompt, QUEST_APPEND_SYSTEM, 90000)
         .then(t => { pgInflight--; const clean = (t || '').replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, '').replace(/```/g, '').trim().slice(0, 500); sendJson(clean ? { ok: true, text: clean } : { ok: false, error: 'no output' }, clean ? 200 : 502) })
         .catch(() => { pgInflight--; sendJson({ ok: false }, 500) })
@@ -7051,7 +7050,7 @@ const httpServer = createServer(async (req, res) => {
     return
   }
 
-  // ---- 每日调教任务面板 quest ----
+  // ---- 每日训练任务面板 quest ----
   // GET /quest/:cid → { panel, date, stale }；POST /quest/:cid/generate {force?} → spawn claude -p 生成今天面板
   if (path.startsWith('/quest/') && path.endsWith('/generate') && req.method === 'POST') {
     readJsonBody(16 * 1024, (raw) => {
